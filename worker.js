@@ -3,7 +3,7 @@ const {
   pop,
   size,
   run
-} = require('./socketClient');
+} = require('./lib/socketClient');
 
 const doubler = (number) =>  {
   return new Promise((resolve) => {

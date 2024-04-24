@@ -1,6 +1,6 @@
-const socketServer = require('./socketServer');
-const jobQueue = require('./jobQueue');
-const workerPool = require('./workerPool');
+const socketServer = require('./lib/socketServer');
+const jobQueue = require('./lib/jobQueue');
+const workerPool = require('./lib/workerPool');
 
 const debug = require('debug');
 const socketLogger = debug('socket:debug');
@@ -28,10 +28,23 @@ socketServer.on('dequeue', callback => {
   callback(next);
 })
 
+socketServer.on('size', callback => {
+  socketLogger(`current jobQueue size =`, jobQueue.size());
+  callback(jobQueue.size());
+})
+
 socketServer.on('job-success', id => {
   socketLogger(`[${id}]job success`);
   socketLogger(`[${id}]add idle worker`);
   workerPool.addIdle(id);
+  socketServer.broadcast('success notification')
+})
+
+socketServer.on('job-failure', id => {
+  socketLogger(`[${id}]job failed`);
+  socketLogger(`[${id}]add idle worker`);
+  workerPool.addIdle(id);
+  socketServer.broadcast('failure notification')
 })
 
 jobQueue.on('enqueue', data => {
