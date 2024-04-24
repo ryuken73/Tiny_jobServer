@@ -7,6 +7,8 @@ const socketLogger = debug('socket:debug');
 const queueLogger = debug('queue:debug');
 const workerPoolLogger = debug('workerPool:debug');
 
+const FETCH_LAST_DONE_WORKER_AS_NEXT = true;
+
 socketServer.on('new-socket', id => {
   socketLogger(`[${id}]new-socket`);
   workerPool.addIdle(id);
@@ -49,7 +51,7 @@ socketServer.on('job-failure', id => {
 
 jobQueue.on('enqueue', data => {
   queueLogger(`new job pushed:`, data);
-  const nextWorker = workerPool.getNextIdle();
+  const nextWorker = workerPool.getNextIdle(FETCH_LAST_DONE_WORKER_AS_NEXT);
   if(nextWorker !== null){
     queueLogger(`new job allocated to`, nextWorker);
     const nextJob = jobQueue.dequeue();
@@ -64,7 +66,7 @@ workerPool.on('add-idle', (id) => {
   const nextJob = jobQueue.dequeue();
   if(nextJob !== undefined){
     workerPoolLogger(`process next job`, nextJob);
-    const nextWorker = workerPool.getNextIdle();
+    const nextWorker = workerPool.getNextIdle(FETCH_LAST_DONE_WORKER_AS_NEXT);
     socketServer.unicast('run', nextWorker, nextJob)
   } else {
     queueLogger(`no jobs to process. just wait!!....`);

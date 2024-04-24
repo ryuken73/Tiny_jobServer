@@ -15,6 +15,7 @@ const doubler = (number) =>  {
 
 run(async (jobData, done) => {
   const result = await doubler(jobData);
+  // const result = jobData * 2;
   console.log('job done:', result)
   done(true)
 })
