@@ -2,8 +2,15 @@ const {
   push,
   pop,
   size,
+  setIdle,
   run
 } = require('./lib/socketClient');
+
+setIdle(['false']);
+
+setTimeout(() => {
+  setIdle(['true']);
+}, Math.random() * 5000)
 
 const doubler = (number) =>  {
   return new Promise((resolve) => {
@@ -34,7 +41,8 @@ const cmdMap = {
   push: customPush,
   pop,
   help: printHelp,
-  size
+  size,
+  setIdle
 }
 
 process.stdin.resume();

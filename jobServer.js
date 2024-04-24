@@ -49,6 +49,17 @@ socketServer.on('job-failure', id => {
   socketServer.broadcast('failure notification')
 })
 
+socketServer.on('set-worker-idle', (id, isIdle, callback) => {
+  // console.log(id, isIdle, typeof(callback))
+  if(isIdle){
+    workerPool.addIdle(id);
+    callback(true)
+  } else {
+    workerPool.delIdle(id);
+    callback(false)
+  }
+})
+
 jobQueue.on('enqueue', data => {
   queueLogger(`new job pushed:`, data);
   const nextWorker = workerPool.getNextIdle(FETCH_LAST_DONE_WORKER_AS_NEXT);
@@ -71,4 +82,12 @@ workerPool.on('add-idle', (id) => {
   } else {
     queueLogger(`no jobs to process. just wait!!....`);
   }
+})
+
+workerPool.on('del-idle', (id) => {
+  workerPoolLogger(`del idle worker:`, id);
+})
+
+workerPool.on('worker-exhausted', () => {
+  workerPoolLogger("worker exhausted!");
 })
