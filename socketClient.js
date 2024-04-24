@@ -1,8 +1,11 @@
 
 const { io } = require('socket.io-client');
+const debug = require('debug');
+const socketLogger = debug('socketClient:debug');
+const socketUrl = process.env.SOCKET_SERVER_URL || 'http://localhost:6875';
 
 module.exports = (function() {
-  const socket = io('http://localhost:6875');
+  const socket = io(socketUrl);
 
   socket.emit('check-in', (stat) => {
     console.log('checked in complete.', stat)
@@ -10,7 +13,7 @@ module.exports = (function() {
 
 
   const push = (params) => {
-    socket.emit('enqueue', {data: params}, (size) => {
+    socket.emit('enqueue', params, (size) => {
       console.log('current job size:', size)
     })
   }
@@ -24,10 +27,12 @@ module.exports = (function() {
   }
 
   const run = (callback) => {
-    socket.on('job', (jobData) => {
+    socketLogger(`[${socket.id}]wait for new Job`);
+    socket.on('run', (jobData) => {
+      socketLogger(`[${socket.id}]got job:`, jobData)
       const done = (success) => {
         if(success){
-          socket.emit('done', jobData);
+          socket.emit('success', jobData);
         } else {
           socket.emit('fail', jobData);
         }

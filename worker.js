@@ -13,17 +13,24 @@ const doubler = (number) =>  {
   })
 }
 
-run( async (jobData, done) => {
-  await doubler(jobData);
-  done(success)
+run(async (jobData, done) => {
+  const result = await doubler(jobData);
+  console.log('job done:', result)
+  done(true)
 })
 
 const printHelp = (cmdMap) => {
   console.log("Valid cmd: %s", Object.keys(cmdMap).join(' '));
 }
 
+const customPush = params => {
+  for(const param of params){
+    push(param.trim());
+  }
+}
+
 const cmdMap = {
-  push,
+  push: customPush,
   pop,
   help: printHelp,
   size
@@ -31,7 +38,7 @@ const cmdMap = {
 
 process.stdin.resume();
 process.stdin.setEncoding('utf-8');
-process.stdin.on('data',function(data){
+process.stdin.on('data',function(data){ 
   const paramsArray = data.split(' ')
   const [cmd, ...params] = paramsArray;
   try {
