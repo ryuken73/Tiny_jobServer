@@ -20,7 +20,7 @@ socketServer.on('new-socket', id => {
 socketServer.on('del-socket', id => {
   logger.info('socket disconnected!')
   socketLogger(`[${id}]del-sockek`);
-  workerPool.delIdle(id);
+  workerPool.delAll(id);
 })
 
 socketServer.on('enqueue', data => {
@@ -62,7 +62,7 @@ socketServer.on('set-worker-idle', (id, isIdle, callback) => {
     workerPool.addIdle(id);
     callback(true)
   } else {
-    workerPool.delIdle(id);
+    workerPool.delAll(id);
     callback(false)
   }
 })
