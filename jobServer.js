@@ -9,18 +9,22 @@ const queueLogger = debug('queue:debug');
 const workerPoolLogger = debug('workerPool:debug');
 
 const FETCH_LAST_DONE_WORKER_AS_NEXT = true;
+const logger = console;
 
 socketServer.on('new-socket', id => {
+  logger.info('new socket connected!')
   socketLogger(`[${id}]new-socket`);
   workerPool.addIdle(id);
 })
 
 socketServer.on('del-socket', id => {
+  logger.info('socket disconnected!')
   socketLogger(`[${id}]del-sockek`);
   workerPool.delIdle(id);
 })
 
 socketServer.on('enqueue', data => {
+  logger.info(`job pushed: ${data}`)
   socketLogger(`data enqueue:`, data);
   jobQueue.enqueue(data);
 })
@@ -37,6 +41,7 @@ socketServer.on('size', callback => {
 })
 
 socketServer.on('job-success', id => {
+  logger.info(`job success`)
   socketLogger(`[${id}]job success`);
   socketLogger(`[${id}]add idle worker`);
   workerPool.addIdle(id);
@@ -44,6 +49,7 @@ socketServer.on('job-success', id => {
 })
 
 socketServer.on('job-failure', id => {
+  logger.info(`job failed`)
   socketLogger(`[${id}]job failed`);
   socketLogger(`[${id}]add idle worker`);
   workerPool.addIdle(id);
@@ -65,10 +71,12 @@ jobQueue.on('enqueue', data => {
   queueLogger(`new job pushed:`, data);
   const nextWorker = workerPool.getNextIdle(FETCH_LAST_DONE_WORKER_AS_NEXT);
   if(nextWorker !== null){
+    logger.info('job allocated')
     queueLogger(`new job allocated to`, nextWorker);
     const nextJob = jobQueue.dequeue();
     socketServer.unicast('run', nextWorker, nextJob)
   } else {
+    logger.info('job pending(no idle worker)')
     queueLogger(`no idle worker!. hold....`);
   }
 })
@@ -77,6 +85,7 @@ workerPool.on('add-idle', (id) => {
   workerPoolLogger(`new idle worker:`, id);
   const nextJob = jobQueue.dequeue();
   if(nextJob !== undefined){
+    logger.info('job allocated')
     workerPoolLogger(`process next job`, nextJob);
     const nextWorker = workerPool.getNextIdle(FETCH_LAST_DONE_WORKER_AS_NEXT);
     socketServer.unicast('run', nextWorker, nextJob)
@@ -94,16 +103,20 @@ workerPool.on('worker-exhausted', () => {
 })
 
 ////
-addCmd('stat', () => {
+addCmd('status', () => {
   const idleList = workerPool.getIdleList();
   const runningList = workerPool.getRunningList();
   return `Idle Workers = ${idleList.length}, Running Workers = ${runningList.length}`
 })
-addCmd('showrun', () => {
+addCmd('st', 'status');
+addCmd('show-idle', () => {
   const idleList = workerPool.getIdleList();
-  return idleList
-  console.log(idleList)
+  return idleList.length === 0 ? 'none' : idleList
 })
-addCmd('st', 'stat');
-addCmd('sr', 'showrun');
+addCmd('si', 'show-idle');
+addCmd('show-run', () => {
+  const runningList = workerPool.getRunningList();
+  return runningList.length === 0 ? 'none' : runningList
+})
+addCmd('sr', 'show-run');
 ////
