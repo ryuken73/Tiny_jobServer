@@ -1,6 +1,7 @@
 const socketServer = require('./lib/socketServer');
 const jobQueue = require('./lib/jobQueue');
 const workerPool = require('./lib/workerPool');
+const {addCmd} = require('./lib/useInlineCmd');
 
 const debug = require('debug');
 const socketLogger = debug('socket:debug');
@@ -91,3 +92,18 @@ workerPool.on('del-idle', (id) => {
 workerPool.on('worker-exhausted', () => {
   workerPoolLogger("worker exhausted!");
 })
+
+////
+addCmd('stat', () => {
+  const idleList = workerPool.getIdleList();
+  const runningList = workerPool.getRunningList();
+  return `Idle Workers = ${idleList.length}, Running Workers = ${runningList.length}`
+})
+addCmd('showrun', () => {
+  const idleList = workerPool.getIdleList();
+  return idleList
+  console.log(idleList)
+})
+addCmd('st', 'stat');
+addCmd('sr', 'showrun');
+////
