@@ -40,16 +40,16 @@ socketServer.on('size', callback => {
   callback(jobQueue.size());
 })
 
-socketServer.on('job-success', id => {
-  logger.info(`job success`)
+socketServer.on('job-success', (id, jobData) => {
+  logger.info(`job success: ${jobData}`)
   socketLogger(`[${id}]job success`);
   socketLogger(`[${id}]add idle worker`);
   workerPool.addIdle(id);
   socketServer.broadcast('success notification')
 })
 
-socketServer.on('job-failure', id => {
-  logger.info(`job failed`)
+socketServer.on('job-failure', (id, jobData) => {
+  logger.info(`job failed: ${jobData}`)
   socketLogger(`[${id}]job failed`);
   socketLogger(`[${id}]add idle worker`);
   workerPool.addIdle(id);
@@ -71,7 +71,7 @@ jobQueue.on('enqueue', data => {
   queueLogger(`new job pushed:`, data);
   const nextWorker = workerPool.getNextIdle(FETCH_LAST_DONE_WORKER_AS_NEXT);
   if(nextWorker !== null){
-    logger.info('job allocated')
+    logger.info(`job allocated: ${data}`)
     queueLogger(`new job allocated to`, nextWorker);
     const nextJob = jobQueue.dequeue();
     socketServer.unicast('run', nextWorker, nextJob)
@@ -85,7 +85,7 @@ workerPool.on('add-idle', (id) => {
   workerPoolLogger(`new idle worker:`, id);
   const nextJob = jobQueue.dequeue();
   if(nextJob !== undefined){
-    logger.info('job allocated')
+    logger.info(`job allocated: ${nextJob}`)
     workerPoolLogger(`process next job`, nextJob);
     const nextWorker = workerPool.getNextIdle(FETCH_LAST_DONE_WORKER_AS_NEXT);
     socketServer.unicast('run', nextWorker, nextJob)
