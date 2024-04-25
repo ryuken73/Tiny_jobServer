@@ -9,6 +9,7 @@ const queueLogger = debug('queue:debug');
 const workerPoolLogger = debug('workerPool:debug');
 
 const FETCH_LAST_DONE_WORKER_AS_NEXT = true;
+const AUTO_STATUS_CHECK = true;
 const logger = console;
 
 socketServer.on('new-socket', id => {
@@ -102,12 +103,15 @@ workerPool.on('worker-exhausted', () => {
   workerPoolLogger("worker exhausted!");
 })
 
-////
-addCmd('status', () => {
+const printStatus = () => {
   const idleList = workerPool.getIdleList();
   const runningList = workerPool.getRunningList();
-  return `Idle Workers = ${idleList.length}, Running Workers = ${runningList.length}`
-})
+  const pendingJobs = jobQueue.size();
+  return `Idle Workers = ${idleList.length}, Running Workers = ${runningList.length}, Pendings = ${pendingJobs}`
+}
+
+////
+addCmd('status', printStatus);
 addCmd('st', 'status');
 addCmd('show-idle', () => {
   const idleList = workerPool.getIdleList();
@@ -120,3 +124,9 @@ addCmd('show-run', () => {
 })
 addCmd('sr', 'show-run');
 ////
+
+if(AUTO_STATUS_CHECK){
+  setInterval(() => {
+    console.log(printStatus());
+  }, 1000)
+}
