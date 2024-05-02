@@ -6,7 +6,8 @@ const {
   run,
   on,
   joinPool,
-  leavePool
+  leavePool,
+  log
 } = require('./lib/socketClient');
 
 const {
@@ -48,6 +49,7 @@ const customPush = params => {
 
 addCmd('push', customPush);
 addCmd('size', size);
-addCmd('jp', joinPool)
-addCmd('lp', leavePool)
+addCmd('jp', joinPool);
+addCmd('lp', leavePool);
+addCmd('log', log);
 
