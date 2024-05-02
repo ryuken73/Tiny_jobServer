@@ -35,8 +35,8 @@ run(async (jobData, done) => {
   done(true, result)
 })
 
-on('jobDone', (success, result) => {
-  console.log(`job done: success=${success} result=`, result);
+on('jobDone', (success, reqData, doneBy, result) => {
+  console.log(`job done: success=${success} reqData=${reqData} doneBy=${doneBy} result=${result}`);
 })
 
 // define custom push to push multiple jobs
