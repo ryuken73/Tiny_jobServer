@@ -4,9 +4,11 @@ const {
   size,
   setIdle,
   run,
+  on,
   joinPool,
   leavePool
 } = require('./lib/socketClient');
+
 const {
   addCmd
 } = require('./lib/useInlineCmd');
@@ -26,10 +28,14 @@ const doubler = (number) =>  {
 }
 
 run(async (jobData, done) => {
+  console.log('job allocated:', jobData)
   const result = await doubler(jobData);
   // const result = jobData * 2;
-  console.log('job done:', result)
-  done(true)
+  done(true, result)
+})
+
+on('jobDone', (success, result) => {
+  console.log(`job done: success=${success} result=`, result);
 })
 
 // define custom push to push multiple jobs
