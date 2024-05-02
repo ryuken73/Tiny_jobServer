@@ -3,14 +3,18 @@ const {
   pop,
   size,
   setIdle,
-  run
+  run,
+  joinPool,
+  leavePool
 } = require('./lib/socketClient');
-const {addCmd} = require('./lib/useInlineCmd');
+const {
+  addCmd
+} = require('./lib/useInlineCmd');
 
-setIdle(['false']);
+setIdle(false);
 
 setTimeout(() => {
-  setIdle(['true']);
+  setIdle(true);
 }, Math.random() * 5000)
 
 const doubler = (number) =>  {
@@ -38,4 +42,6 @@ const customPush = params => {
 
 addCmd('push', customPush);
 addCmd('size', size);
+addCmd('jp', joinPool)
+addCmd('lp', leavePool)
 
