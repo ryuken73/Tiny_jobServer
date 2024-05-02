@@ -5,6 +5,7 @@ const {
   setIdle,
   run
 } = require('./lib/socketClient');
+const {addCmd} = require('./lib/useInlineCmd');
 
 setIdle(['false']);
 
@@ -27,36 +28,14 @@ run(async (jobData, done) => {
   done(true)
 })
 
-const printHelp = (cmdMap) => {
-  console.log("Valid cmd: %s", Object.keys(cmdMap).join(' '));
-}
-
+// define custom push to push multiple jobs
+// ex) push 1 2 3 4 calls push 1, push 2 and...push 4
 const customPush = params => {
   for(const param of params){
     push(param.trim());
   }
 }
 
-const cmdMap = {
-  push: customPush,
-  pop,
-  help: printHelp,
-  size,
-  setIdle
-}
+addCmd('push', customPush);
+addCmd('size', size);
 
-process.stdin.resume();
-process.stdin.setEncoding('utf-8');
-process.stdin.on('data',function(data){ 
-  const paramsArray = data.split(' ')
-  const [cmd, ...params] = paramsArray;
-  try {
-    // const result = cmdMap[cmd.trim()](params);
-    value = cmdMap[cmd.trim()];
-    const key = typeof(value) === 'string' ? value : cmd.trim();
-    const result = cmdMap[key](params);
-  } catch(ex) { 
-    // console.log(ex);
-    cmdMap.help(cmdMap);		
-  }
-})
